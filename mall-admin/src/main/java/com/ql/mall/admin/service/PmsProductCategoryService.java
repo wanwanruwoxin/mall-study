@@ -1,6 +1,7 @@
 package com.ql.mall.admin.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ql.mall.admin.vo.ProductionCategoryVo;
 import com.ql.mall.model.PmsProductCategory;
 
 import java.util.List;
@@ -13,4 +14,6 @@ import java.util.List;
 public interface PmsProductCategoryService extends IService<PmsProductCategory> {
 
     List<PmsProductCategory> nextLevel(Integer parentId);
+
+    void update(Integer id, ProductionCategoryVo categoryVo) throws Exception;
 }

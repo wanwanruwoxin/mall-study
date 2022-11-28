@@ -1,6 +1,7 @@
 package com.ql.mall.admin.controller;
 
 import com.ql.mall.admin.service.PmsProductCategoryService;
+import com.ql.mall.admin.vo.ProductionCategoryVo;
 import com.ql.mall.common.api.CommonResult;
 import com.ql.mall.model.PmsProductCategory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,5 +42,11 @@ public class PmsProductCategoryController {
     public CommonResult<List<PmsProductCategory>> nextLevel(@PathVariable Integer parentId) {
         List<PmsProductCategory> pmsProductCategoryList = productCategoryService.nextLevel(parentId);
         return CommonResult.success(pmsProductCategoryList);
+    }
+
+    @PostMapping("/productCategory/update/{id}")
+    public CommonResult update(@PathVariable Integer id, ProductionCategoryVo categoryVo){
+        productCategoryService.update(id, categoryVo);
+        return CommonResult.success(null);
     }
 }
