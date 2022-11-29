@@ -1,13 +1,18 @@
 package com.ql.mall.admin.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ql.mall.admin.mapper.PmsProductCategoryAttributeRelationMapper;
 import com.ql.mall.admin.mapper.PmsProductCategoryMapper;
 import com.ql.mall.admin.service.PmsProductCategoryService;
 import com.ql.mall.admin.vo.ProductionCategoryVo;
 import com.ql.mall.model.PmsProductCategory;
+import com.ql.mall.model.PmsProductCategoryAttributeRelation;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -22,6 +27,8 @@ import java.util.Optional;
 public class PmsProductCategoryServiceImpl extends ServiceImpl<PmsProductCategoryMapper, PmsProductCategory> implements PmsProductCategoryService {
     @Autowired
     private PmsProductCategoryMapper productCategoryMapper;
+    @Autowired
+    private PmsProductCategoryAttributeRelationMapper productCategoryAttributeRelationMapper;
 
     @Override
     public List<PmsProductCategory> nextLevel(Integer parentId) {
@@ -31,18 +38,43 @@ public class PmsProductCategoryServiceImpl extends ServiceImpl<PmsProductCategor
     }
 
     @Override
-    public void update(Integer id, ProductionCategoryVo categoryVo) throws Exception {
-        // 根据id查找是否有这个分类，如果有就更新，没有就抛出异常
-        PmsProductCategory category = productCategoryMapper.selectById(id);
-        if (Objects.isNull(category)) {
-            throw new Exception("该分类不存在");
+    public void update(Long id, ProductionCategoryVo categoryVo) throws Exception {
+        PmsProductCategory productCategory = new PmsProductCategory();
+        productCategory.setId(id);
+        BeanUtils.copyProperties(categoryVo, productCategory);
+
+        setCategoryLevel(productCategory);
+
+        List<Long> productAttributeIdList = categoryVo.getProductAttributeIdList();
+
+        // 删除并新增分类与产品属性的关联
+        productCategoryAttributeRelationMapper.delete(new LambdaQueryWrapper<PmsProductCategoryAttributeRelation>()
+                .eq(PmsProductCategoryAttributeRelation::getProductCategoryId, productCategory.getId()));
+        if(!CollectionUtils.isEmpty(productAttributeIdList)) {
+            productAttributeIdList.forEach(item -> {
+                PmsProductCategoryAttributeRelation pmsProductCategoryAttributeRelation = new PmsProductCategoryAttributeRelation();
+                pmsProductCategoryAttributeRelation.setProductCategoryId(productCategory.getId());
+                pmsProductCategoryAttributeRelation.setProductAttributeId(item);
+                productCategoryAttributeRelationMapper.insert(pmsProductCategoryAttributeRelation);
+            });
         }
-        PmsProductCategory productCategory = PmsProductCategory
-                .builder()
-                .parentId(categoryVo.getParentId())
-                .name(categoryVo.getName())
-                .level(categoryVo.getParentId() == 0 ? 0 : 1)
-                .build();
+
         // 修改查找出的Category并更新
+        productCategoryMapper.updateById(productCategory);
+    }
+
+    private void setCategoryLevel(PmsProductCategory productCategory) {
+        // 设置productCategory的level
+        PmsProductCategory parentCategory = productCategoryMapper.selectOne(new LambdaQueryWrapper<PmsProductCategory>()
+                .eq(PmsProductCategory::getId, productCategory.getParentId()));
+        if (productCategory.getParentId() == 0) {
+            productCategory.setLevel(0);
+        }else {
+            if (parentCategory == null) {
+                productCategory.setLevel(0);
+            }else {
+                productCategory.setLevel(1);
+            }
+        }
     }
 }

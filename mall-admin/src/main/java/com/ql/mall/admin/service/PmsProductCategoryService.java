@@ -15,5 +15,5 @@ public interface PmsProductCategoryService extends IService<PmsProductCategory> 
 
     List<PmsProductCategory> nextLevel(Integer parentId);
 
-    void update(Integer id, ProductionCategoryVo categoryVo) throws Exception;
+    void update(Long id, ProductionCategoryVo categoryVo) throws Exception;
 }

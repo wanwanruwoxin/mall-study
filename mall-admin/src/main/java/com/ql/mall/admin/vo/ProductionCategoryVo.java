@@ -17,13 +17,13 @@ import java.util.List;
 @AllArgsConstructor
 public class ProductionCategoryVo {
     private String description;
-    private Integer id;
+    private Long id;
     private String keywords;
     private String name;
     private Integer navStatus;
     private Long parentId;
-    private List<Integer> productAttributeIdList;
-    private Long productCount;
+    private List<Long> productAttributeIdList;
+    private Integer productCount;
     private String productUnit;
     private Integer showStatus;
     private Integer sort;

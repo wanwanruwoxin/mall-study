@@ -45,8 +45,13 @@ public class PmsProductCategoryController {
     }
 
     @PostMapping("/productCategory/update/{id}")
-    public CommonResult update(@PathVariable Integer id, ProductionCategoryVo categoryVo){
-        productCategoryService.update(id, categoryVo);
-        return CommonResult.success(null);
+    public CommonResult update(@PathVariable Long id, @RequestBody ProductionCategoryVo categoryVo){
+        try {
+            productCategoryService.update(id, categoryVo);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return CommonResult.failed("更新失败");
+        }
+        return CommonResult.success("更新成功");
     }
 }
